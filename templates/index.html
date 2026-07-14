@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmailJS Static Bulk Mail</title>
+    
+    <!-- Using UNPKG as primary CDN instead of jsDelivr to bypass network timeouts -->
+    <script type="text/javascript" src="https://unpkg.com"></script>
+
+    <script type="text/javascript">
+        // FALLBACK: If UNPKG fails to load, try pulling from Cloudflare's CDNJS
+        if (typeof emailjs === 'undefined') {
+            console.warn("Primary CDN timed out. Attempting backup CDN...");
+            document.write('<script src="https://cloudflare.com"><\/script>');
+        }
+    </script>
+</head>
+<body>
+
+    <div style="max-width: 500px; margin: 30px auto; font-family: Arial, sans-serif;">
+        <h2>Static Bulk Email Sender</h2>
+        <p style="color: #666; font-size: 14px;">Make sure your template <strong>template_km1kppo</strong> has <code>{{to_email}}</code> set in the "To Email" setting.</p>
+        
+        <button id="send-btn" onclick="sendBulkEmails()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Start Sending</button>
+        
+        <div id="status" style="margin-top: 20px; font-family: monospace; background: #f4f4f4; padding: 15px; border-radius: 5px; min-height: 50px; line-height: 1.6;">
+            Waiting for initialization...
+        </div>
+    </div>
+
+    <script>
+        const serviceID = "service_mrp464x";
+        const templateID = "template_km1kppo";
+        const publicKey = "wpkTO75TywMfnFjyK";
+
+const emailList = [
+            "tolecaxtone2.com",
+            "caxtonetechnologieske@gmail.com",
+            "recipient3@example.com"
+        ];
+
+        // Safe Initialization Check
+        window.addEventListener('DOMContentLoaded', () => {
+            const statusDiv = document.getElementById("status");
+            const btn = document.getElementById("send-btn");
+
+            if (typeof emailjs !== 'undefined') {
+                try {
+                    emailjs.init(publicKey);
+                    statusDiv.innerHTML = "<span style='color: green;'>✓ EmailJS initialized successfully and ready.</span>";
+                } catch (e) {
+                    statusDiv.innerHTML = "<span style='color: red;'>× Failed to initialize with key. Check console log.</span>";
+                    btn.disabled = true;
+                }
+            } else {
+                statusDiv.innerHTML = "<span style='color: red; font-weight: bold;'>× Error: Network blocked all CDNs. EmailJS script could not load.</span>";
+                btn.disabled = true;
+            }
+        });
+
+        // Loop execution function
+        async function sendBulkEmails() {
+            const btn = document.getElementById("send-btn");
+            const statusDiv = document.getElementById("status");
+            
+            btn.disabled = true;
+            statusDiv.innerHTML = "Initializing batch processing...<br><br>";
+
+            for (const email of emailList) {
+                const templateParams = {
+                    to_email: email
+                };
+
+                try {
+                    statusDiv.innerHTML += `Dispatching to ${email}... `;
+                    
+                    // Trigger request via SDK
+                    await emailjs.send(serviceID, templateID, templateParams);
+                    
+                    statusDiv.innerHTML += "<span style='color: green; font-weight: bold;'>[DELIVERED]</span><br>";
+                } catch (error) {
+                    statusDiv.innerHTML += `<span style='color: red; font-weight: bold;'>[FAILED: ${JSON.stringify(error)}]</span><br>`;
+                }
+
+                // 1.5-second pacing delay to respect browser networking and API rate limits
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            statusDiv.innerHTML += "<br><strong>Batch process completed.</strong>";
+            btn.disabled = false;
+        }
+    </script>
+
+</body>
+</html>
